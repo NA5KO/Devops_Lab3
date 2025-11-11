@@ -23,9 +23,14 @@ pipeline {
     stage('Deploy to Kubernetes (kubectl)') {
       steps {
         script {
-          // Assumes kubectl is configured on Jenkins agent (KUBECONFIG or in-cluster)
-          sh "kubectl set image deployment/mon-app-deployment mon-app=${DOCKER_IMAGE}:${IMAGE_TAG} --record || kubectl apply -f k8s/deployment.yaml"
-          sh "kubectl apply -f k8s/service.yaml || true"
+          // This pipeline uses a kubeconfig provided as a Jenkins "Secret file" credential
+          // Create a credential in Jenkins (Kind: "Secret file") with ID `kubeconfig` containing your kubeconfig
+          // The file will be exposed as a temp file path in the variable $KUBECONFIG_FILE below.
+          withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+            // Use the credential file with --kubeconfig to run kubectl authenticated
+            sh "kubectl --kubeconfig=$KUBECONFIG_FILE set image deployment/mon-app-deployment mon-app=${DOCKER_IMAGE}:${IMAGE_TAG} --record || kubectl --kubeconfig=$KUBECONFIG_FILE apply -f k8s/deployment.yaml"
+            sh "kubectl --kubeconfig=$KUBECONFIG_FILE apply -f k8s/service.yaml || true"
+          }
         }
       }
     }
