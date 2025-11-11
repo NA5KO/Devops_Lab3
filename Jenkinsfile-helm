@@ -6,11 +6,6 @@ pipeline {
     HELM_CHART_PATH = './mon-app'
   }
   stages {
-    stage('Clone repository') {
-      steps {
-        git url: 'https://github.com/NA5KO/Devops_Lab3.git'
-      }
-    }
     stage('Build Docker image') {
       steps {
         script {

@@ -5,11 +5,6 @@ pipeline {
     IMAGE_TAG = "${env.BUILD_NUMBER ?: 'latest'}"
   }
   stages {
-    stage('Clone repository') {
-      steps {
-        git url: 'https://github.com/NA5KO/Devops_Lab3.git'
-      }
-    }
     stage('Build Docker image') {
       steps {
         script {
