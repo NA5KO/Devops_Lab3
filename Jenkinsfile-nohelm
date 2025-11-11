@@ -7,7 +7,7 @@ pipeline {
   stages {
     stage('Clone repository') {
       steps {
-        git url: 'https://github.com/NA5KO/Devops_Lab3#'
+        git url: 'https://github.com/NA5KO/Devops_Lab3.git'
       }
     }
     stage('Build Docker image') {
