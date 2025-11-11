@@ -1,0 +1,18 @@
+replicaCount: 2
+
+image:
+  repository: your-dockerhub/mon-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

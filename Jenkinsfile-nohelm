@@ -1,0 +1,43 @@
+pipeline {
+  agent any
+  environment {
+    DOCKER_IMAGE = 'amine101yahya/mon-app'
+    IMAGE_TAG = "${env.BUILD_NUMBER ?: 'latest'}"
+  }
+  stages {
+    stage('Clone repository') {
+      steps {
+        git url: 'https://github.com/NA5KO/Devops_Lab3#'
+      }
+    }
+    stage('Build Docker image') {
+      steps {
+        script {
+          sh "docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} ."
+        }
+      }
+    }
+    stage('Push image to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+          sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+          sh "docker push ${DOCKER_IMAGE}:${IMAGE_TAG}"
+        }
+      }
+    }
+    stage('Deploy to Kubernetes (kubectl)') {
+      steps {
+        script {
+          // Assumes kubectl is configured on Jenkins agent (KUBECONFIG or in-cluster)
+          sh "kubectl set image deployment/mon-app-deployment mon-app=${DOCKER_IMAGE}:${IMAGE_TAG} --record || kubectl apply -f k8s/deployment.yaml"
+          sh "kubectl apply -f k8s/service.yaml || true"
+        }
+      }
+    }
+  }
+  post {
+    always {
+      echo "Pipeline finished"
+    }
+  }
+}
